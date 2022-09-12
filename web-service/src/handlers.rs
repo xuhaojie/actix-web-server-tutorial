@@ -10,7 +10,6 @@ pub async fn health_check_handler(app_state: web::Data<AppState>) -> HttpRespons
 	let response = format!("{} {} times", health_check_response, visit_count);
 	*visit_count += 1;
 	HttpResponse::Ok().json(&response)
-
 }
 
 pub async fn new_course(app_state: web::Data<AppState>, new_course: web::Json<Course>) -> HttpResponse {
@@ -34,6 +33,41 @@ pub async fn new_course(app_state: web::Data<AppState>, new_course: web::Json<Co
 	HttpResponse::Ok().json("Course added")
 }
 
+pub async fn get_courses_for_teacher(app_state: web::Data<AppState>,  params: web::Path<usize>) -> HttpResponse {
+	let teacher_id = params.0;
+	let filtered_courses = app_state
+		.course
+		.lock()
+		.unwrap()
+		.clone()
+		.into_iter()
+		.filter(|courses| courses.teacher_id == teacher_id)
+		.collect::<Vec<Course>>();
+
+	if filtered_courses.len() > 0{
+		HttpResponse::Ok().json(filtered_courses)
+	} else {
+		HttpResponse::Ok().json("No courses found for teacher".to_owned())
+	}
+}
+
+pub async fn get_course_detail(app_state: web::Data<AppState>, params: web::Path<(usize,usize)>) -> HttpResponse {
+	let (teacher_id, course_id) = params.0;
+	let selected_course = app_state
+		.course
+		.lock()
+		.unwrap()
+		.clone()
+		.into_iter()
+		.find(|x| x.teacher_id == teacher_id && x.id == Some(course_id))
+		.ok_or("Course not found");
+
+	if let Ok(course) = selected_course {
+		HttpResponse::Ok().json(course)
+	} else {
+		HttpResponse::Ok().json("Course not found".to_owned())
+	}
+}
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -55,4 +89,34 @@ mod tests {
 		let resp = new_course(app_state, course).await;
 		assert_eq!(resp.status(), StatusCode::OK);
 	}
+	#[actix_rt::test]
+	async fn get_all_courses(){
+		let app_state: web::Data<AppState> = web::Data::new(AppState {
+			health_check_response: "".to_string(),
+			visit_count: Mutex::new(0),
+			course: Mutex::new(Vec::new()),
+		});
+		let teacher_id : web::Path<usize> = web::Path::from(1);
+		let resp = get_courses_for_teacher(app_state, teacher_id).await;
+		assert_eq!(resp.status(), StatusCode::OK);
+	}
+	#[actix_rt::test]
+	async fn get_one_course(){
+		let app_state: web::Data<AppState> = web::Data::new(AppState {
+			health_check_response: "".to_string(),
+			visit_count: Mutex::new(0),
+			course: Mutex::new(Vec::new()),
+		});
+		let params : web::Path<(usize,usize)> = web::Path::from((1,1));
+		let resp = get_course_detail(app_state, params).await;
+		assert_eq!(resp.status(), StatusCode::OK);
+	}
 }
+
+/*
+curl -X POST localhost:8080/courses/ -H "Content-Type: application/json" -d '{"teacher_id" : 1, "name": "First course"}'
+curl -X POST localhost:8080/courses/ -H "Content-Type: application/json" -d '{"teacher_id" : 1, "name": "Second course"}'
+curl -X POST localhost:8080/courses/ -H "Content-Type: application/json" -d '{"teacher_id" : 1, "name": "Third course"}'
+
+curl localhost:8080/courses/1
+*/
