@@ -1,2 +1,2 @@
 [workspace]
-members = ["web-service"]
+members = ["web-service", "webapp"]

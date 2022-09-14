@@ -52,5 +52,5 @@ async fn main() -> io::Result<()> {
 		.configure(teacher_routes)
 	};
 
-	HttpServer::new(app).bind("127.0.0.1:8080")?.run().await
+	HttpServer::new(app).bind("127.0.0.1:3000")?.run().await
 }
