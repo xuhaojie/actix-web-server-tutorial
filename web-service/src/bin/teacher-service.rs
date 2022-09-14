@@ -4,6 +4,7 @@ use std::sync::Mutex;
 use dotenv::dotenv;
 use std::env;
 use sqlx::postgres::PgPoolOptions;
+use crate::errors::MyError;
 
 #[path = "../handlers/mod.rs"]
 mod handlers;
@@ -43,8 +44,12 @@ async fn main() -> io::Result<()> {
 	let app = move || {
 		App::new()
 		.app_data(shared_data.clone())
+		.app_data(web::JsonConfig::default().error_handler(|_err, _req| {
+			MyError::InvalidInput("Please provide valid Json input".to_string()).into()
+		}))
 		.configure(general_routes)
 		.configure(course_routes)
+		.configure(teacher_routes)
 	};
 
 	HttpServer::new(app).bind("127.0.0.1:8080")?.run().await
