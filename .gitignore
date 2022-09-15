@@ -1,2 +1,5 @@
 /target
 Cargo.lock
+wasm-client/.appveyor.yml
+wasm-client/.travis.yml
+wasm-client/www/.travis.yml

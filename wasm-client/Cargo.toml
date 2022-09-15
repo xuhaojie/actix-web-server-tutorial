@@ -16,7 +16,7 @@ serde = {version ="1.0", features = ["derive"]}
 serde_derive = "1.0"
 serde_json = "1.0"
 js-sys = "0.3"
-web-sys = {version = "0.3", features = ["Headers", "Request", "RequestInit", "RequestMode", "Response", "Window", "Document", "Element", "HtmlElement", "Node", "console"]}
+web-sys = {version = "0.3", features = ["Headers", "Request", "RequestInit", "RequestMode", "Response", "Window", "Document", "Element", "HtmlElement", "Node", "console", "HtmlButtonElement", "MouseEvent", "Location"]}
 wasm-bindgen = {version = "0.2.63", features = ["serde-serialize"]}
 wasm-bindgen-futures = "0.4"
 
