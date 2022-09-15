@@ -1,2 +1,2 @@
 [workspace]
-members = ["web-service", "web-app"]
+members = ["web-service", "web-app", "wasm-client"]
